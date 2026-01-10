@@ -8,7 +8,7 @@ import {
     View,
 } from "react-native";
 
-/* ---------- TYPES ---------- */
+/* ================= TYPES ================= */
 type Question = {
   id: number;
   question: string;
@@ -17,7 +17,7 @@ type Question = {
   marks: number;
 };
 
-/* ---------- DUMMY DATA (UI ONLY) ---------- */
+/* ================= DUMMY DATA ================= */
 const QUESTIONS: Question[] = [
   {
     id: 1,
@@ -41,18 +41,16 @@ const QUESTIONS: Question[] = [
   },
 ];
 
-/* ---------- APP ---------- */
+/* ================= APP ================= */
 export default function App() {
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const answeredCount = Object.keys(answers).length;
 
   const selectOption = (qId: number, index: number) => {
     if (submitted) return;
     setAnswers({ ...answers, [qId]: index });
-  };
-
-  const submitQuiz = () => {
-    setSubmitted(true);
   };
 
   const restartQuiz = () => {
@@ -68,11 +66,19 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* HEADER */}
+      {/* ================= HEADER ================= */}
+      <View style={styles.header}>
+        <Text style={styles.backArrow}>←</Text>
         <Text style={styles.title}>Bodha UPSC – Daily Quiz</Text>
+      </View>
 
-        {/* QUESTIONS */}
+      {/* ================= PROGRESS ================= */}
+      <Text style={styles.progress}>
+        Answered {answeredCount} / {QUESTIONS.length}
+      </Text>
+
+      {/* ================= QUESTIONS ================= */}
+      <ScrollView contentContainerStyle={styles.container}>
         {QUESTIONS.map((q) => (
           <View key={q.id} style={styles.card}>
             <View style={styles.qHeader}>
@@ -86,34 +92,34 @@ export default function App() {
               const selected = answers[q.id] === idx;
               const isCorrect = idx === q.correctIndex;
 
-              let optionStyle = styles.option;
-
-              if (submitted) {
-                if (isCorrect) optionStyle = styles.correct;
-                else if (selected) optionStyle = styles.wrong;
-              } else if (selected) {
-                optionStyle = styles.selected;
-              }
+              const optionStyles = [
+                styles.option,
+                !submitted && selected && styles.selected,
+                submitted && isCorrect && styles.correct,
+                submitted && selected && !isCorrect && styles.wrong,
+              ];
 
               return (
                 <TouchableOpacity
                   key={idx}
-                  style={optionStyle}
+                  style={optionStyles}
                   onPress={() => selectOption(q.id, idx)}
                 >
-                  <Text>
+                  <Text style={styles.optionText}>
                     {String.fromCharCode(65 + idx)}. {opt}
                   </Text>
                 </TouchableOpacity>
               );
             })}
 
-            {/* ANSWER REVIEW */}
+            {/* ================= REVIEW ================= */}
             {submitted && (
               <Text style={styles.reviewText}>
-                {answers[q.id] === q.correctIndex
+                {answers[q.id] === undefined
+                  ? "⚪ Not Attempted · Marks: 0"
+                  : answers[q.id] === q.correctIndex
                   ? `✔ Correct · +${q.marks} Mark`
-                  : `✖ Incorrect · Correct Answer: Option ${String.fromCharCode(
+                  : `✖ Incorrect · Correct: Option ${String.fromCharCode(
                       65 + q.correctIndex
                     )} · Marks: 0`}
               </Text>
@@ -121,61 +127,84 @@ export default function App() {
           </View>
         ))}
 
-        {/* SUBMIT BUTTON */}
-        {!submitted && (
-          <TouchableOpacity style={styles.submitBtn} onPress={submitQuiz}>
+        {/* Space for sticky footer */}
+        <View style={{ height: 90 }} />
+      </ScrollView>
+
+      {/* ================= STICKY FOOTER ================= */}
+      <View style={styles.footer}>
+        {!submitted ? (
+          <TouchableOpacity
+            style={[
+              styles.primaryBtn,
+              answeredCount !== QUESTIONS.length && styles.disabledBtn,
+            ]}
+            disabled={answeredCount !== QUESTIONS.length}
+            onPress={() => setSubmitted(true)}
+          >
             <Text style={styles.btnText}>Submit Quiz</Text>
           </TouchableOpacity>
-        )}
-
-        {/* TOTAL + RESTART */}
-        {submitted && (
+        ) : (
           <>
             <Text style={styles.total}>
               Total Marks: {obtainedMarks} / {totalMarks}
             </Text>
-
-            <TouchableOpacity
-              style={styles.restartBtn}
-              onPress={restartQuiz}
-            >
+            <TouchableOpacity style={styles.primaryBtn} onPress={restartQuiz}>
               <Text style={styles.btnText}>Restart Quiz</Text>
             </TouchableOpacity>
           </>
         )}
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
-/* ---------- STYLES ---------- */
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f4f6f8",
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#fff",
+  },
+
+  backArrow: {
+    fontSize: 20,
+    marginRight: 10,
+  },
+
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  progress: {
+    paddingHorizontal: 16,
+    paddingBottom: 6,
+    fontSize: 12,
+    color: "#555",
   },
 
   container: {
     padding: 16,
   },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-
   card: {
     backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 14,
   },
 
   qHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 10,
   },
 
   question: {
@@ -186,64 +215,58 @@ const styles = StyleSheet.create({
 
   mark: {
     fontSize: 12,
-    color: "#555",
+    color: "#666",
   },
 
   option: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 6,
-    marginVertical: 4,
+    borderColor: "#ddd",
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 5,
+  },
+
+  optionText: {
+    fontSize: 14,
   },
 
   selected: {
-    borderWidth: 1,
     borderColor: "#1e3a8a",
     backgroundColor: "#eef2ff",
-    padding: 10,
-    borderRadius: 6,
-    marginVertical: 4,
   },
 
   correct: {
-    borderWidth: 1,
-    borderColor: "green",
-    backgroundColor: "#e6f7e6",
-    padding: 10,
-    borderRadius: 6,
-    marginVertical: 4,
+    borderColor: "#2e7d32",
+    backgroundColor: "#e8f5e9",
   },
 
   wrong: {
-    borderWidth: 1,
-    borderColor: "red",
-    backgroundColor: "#fdeaea",
-    padding: 10,
-    borderRadius: 6,
-    marginVertical: 4,
+    borderColor: "#c62828",
+    backgroundColor: "#fdecea",
   },
 
   reviewText: {
-    marginTop: 6,
+    marginTop: 8,
     fontSize: 12,
     color: "#333",
   },
 
-  submitBtn: {
-    backgroundColor: "#1e3a8a",
-    padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginVertical: 16,
+  footer: {
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    backgroundColor: "#fff",
   },
 
-  restartBtn: {
+  primaryBtn: {
     backgroundColor: "#1e3a8a",
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
-    marginVertical: 20,
+  },
+
+  disabledBtn: {
+    backgroundColor: "#9fa8da",
   },
 
   btnText: {
@@ -254,6 +277,6 @@ const styles = StyleSheet.create({
   total: {
     textAlign: "center",
     fontWeight: "600",
-    marginTop: 10,
+    marginBottom: 8,
   },
 });

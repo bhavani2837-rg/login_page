@@ -12,21 +12,21 @@ import {
   View,
 } from "react-native";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
-export default function LoginScreen() {
+export default function HomeScreen() {
   const [mobile, setMobile] = useState("");
 
   return (
     <ImageBackground
-      source={require("./assets/images/pagebg.png")}
+      source={require("../../assets/images/pagebg.jpeg")}
       style={styles.bg}
       resizeMode="cover"
     >
-      {/* Top Logo Section */}
+      {/* LOGO + TITLE */}
       <View style={styles.topSection}>
         <Image
-          source={require("./assets/images/bicon.png")}
+          source={require("../../assets/images/bicon.png")}
           style={styles.logo}
         />
 
@@ -34,11 +34,11 @@ export default function LoginScreen() {
         <Text style={styles.subBrandText}>CIVILS PREP</Text>
       </View>
 
-      {/* Card Section */}
+      {/* LOGIN CARD */}
       <View style={styles.card}>
         <Text style={styles.label}>Mobile Number</Text>
 
-        {/* Input Box */}
+        {/* INPUT */}
         <View style={styles.inputRow}>
           <View style={styles.countryBox}>
             <Text style={styles.countryText}>+91</Text>
@@ -55,7 +55,7 @@ export default function LoginScreen() {
           />
         </View>
 
-        {/* Send OTP Button */}
+        {/* BUTTON */}
         <TouchableOpacity activeOpacity={0.9} style={styles.btnOuter}>
           <LinearGradient
             colors={["#5A1A9E", "#8B33D6"]}
@@ -67,7 +67,7 @@ export default function LoginScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Secure Line */}
+        {/* SECURE TEXT */}
         <View style={styles.secureRow}>
           <MaterialCommunityIcons
             name="shield-check"
